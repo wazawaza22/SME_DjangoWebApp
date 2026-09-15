@@ -18,7 +18,7 @@ def student_create(request):
         )
         return redirect("student_list")
     
-    return redirect("student_list")
+    return render(request, "registration/student_form.html")  # ✅ SHOWS the form!
 
 
 

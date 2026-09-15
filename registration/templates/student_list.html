@@ -1,6 +1,14 @@
+{% if user.is_authenticated %}
+    <p>Logged in as: {{ user.username }}</p>
+    <form method="post" action="{% url 'logout' %}">
+        {% csrf_token %}
+        <button type="submit">Logout</button>
+    </form>
+{% endif %}
+
 <h1>Registered Students</h1>
-<a href="{% url 'student_list' %}">Register Student</a>
-<a href="{% url 'student_dashboard' %}">Student Dashboard
+<a href="/registration/add/">Register Student</a>
+<a href="/registration/dashboard/">Student Dashboard</a>
 </a>
 <br><br>
 
