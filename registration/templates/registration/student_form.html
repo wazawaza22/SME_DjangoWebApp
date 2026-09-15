@@ -6,9 +6,21 @@
 <body>
     <h1>Student Registration</h1>
 
-    <form method="post">
+    <form method="POST">
         {% csrf_token %}
-        {{ form.as_p }}
+
+        <label>Name:</label><br>
+        <input type="text" name="student_name" value="{{ student.student_name }}" required><br><br>
+
+        <label>Program:</label><br>
+        <input type="text" name="program" value="{{ student.program }}" required><br><br>
+
+        <label>Year Level:</label><br>
+        <input type="text" name="year_level" value="{{ student.year_level }}" required><br><br>
+
+        <label>Email:</label><br>
+        <input type="email" name="email" value="{{ student.email }}" required><br><br>
+
         <button type="submit">Save</button>
     </form>
 

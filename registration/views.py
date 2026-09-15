@@ -1,61 +1,79 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect
+from django.db.models import Count
 from .models import Student
-from .forms import StudentForm
 
-# CREATE Operation
+
+
 def student_create(request):
-    if request.method == 'POST':
-        form = StudentForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('student_list')
-    else:
-        form = StudentForm()
-    return render(
-        request,
-        'registration/student_form.html',
-        {'form': form}
-    )
+    if request.method == "POST":
+        student_name = request.POST.get("student_name")
+        program = request.POST.get("program")
+        student.year_level = request.POST.get("year_level")
+        email = request.POST.get("email")
+        Student.objects.create(
+            student_name=student_name,
+            program=program,
+            year_level=year_level,
+            email=email
+        )
+        return redirect("student_list")
+    
+    return redirect("student_list")
 
-# READ Operation
+
+
 def student_list(request):
     students = Student.objects.all()
-    return render(
-        request,
-        'student_list.html',
-        {'students': students}
-    )
+    return render(request, "student_list.html", {"students": students})
 
-    # UPDATE Operation
+
+
 def student_update(request, pk):
-    student = get_object_or_404(Student, pk=pk)
-    if request.method == 'POST':
-        form = StudentForm(
-            request.POST,
-            instance=student
-        )
-        if form.is_valid():
-            form.save()
-            return redirect('student_list')
-    else:
-        form = StudentForm(instance=student)
-    return render(
-        request,
-        'registration/student_form.html',
-        {
-            'form': form,
-            'student': student
-        }
+    student = Student.objects.get(id=pk)
+    if request.method == "POST":
+        student.student_name = request.POST.get("student_name")
+        student.program = request.POST.get("program")
+        student.year_level = request.POST.get("year_level")
+        student.email = request.POST.get("email")
+        student.save()
+        return redirect("student_list")
+    return render(request, "registration/student_form.html", {"student": student})
+
+
+
+def student_delete(request, pk):
+    student = Student.objects.get(id=pk)
+    if request.method == "POST":
+        student.delete()
+        return redirect("student_list")
+    return render(request, "registration/student_confirm_delete.html", {"student": student})
+
+
+
+def student_dashboard(request):
+    students = Student.objects.all()
+    total_students = students.count()
+
+    program_summary = (
+        students
+        .values('program')
+        .annotate(total=Count('id'))
+        .order_by('program')
     )
 
-#DELETE Operation
-def student_delete(request, pk):
-    student = get_object_or_404(Student, pk=pk)
-    if request.method == 'POST':
-        student.delete()
-        return redirect('student_list')
+    year_summary = (
+        students
+        .values('year_level')
+        .annotate(total=Count('id'))
+        .order_by('year_level')
+    )
+
     return render(
         request,
-        'registration/student_confirm_delete.html',
-        {'student': student}
+        'registration/student_dashboard.html',
+        {
+            'total_students': total_students,
+            'program_summary': program_summary,
+            'year_summary': year_summary,
+        }
     )

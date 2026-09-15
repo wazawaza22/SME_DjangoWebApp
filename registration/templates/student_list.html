@@ -1,8 +1,10 @@
 <h1>Registered Students</h1>
 <a href="{% url 'student_list' %}">Register Student</a>
+<a href="{% url 'student_dashboard' %}">Student Dashboard
+</a>
 <br><br>
 
-<!-- ✅ PROPER TABLE WITH COLUMNS -->
+
 <table border="1" cellpadding="8" cellspacing="0">
     <tr>
         <th>Name</th>
@@ -15,7 +17,7 @@
     <tr>
         <td>{{ student.student_name }}</td>
         <td>{{ student.program }}</td>
-        <td>{{ student.year }}</td>
+        <td>{{ student.year_level }}</td>
         <td>{{ student.email }}</td>
         <td>
             <a href="{% url 'student_update' student.id %}">Edit</a> |
