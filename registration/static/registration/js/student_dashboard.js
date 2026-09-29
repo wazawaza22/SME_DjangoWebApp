@@ -1,73 +1,133 @@
+let allStudents = [];
+
+const searchInput = document.getElementById("student-search");
+const programFilter = document.getElementById("program-filter");
+const clearButton = document.getElementById("clear-filters");
+const refreshButton = document.getElementById("refresh-students");
+const resultCount = document.getElementById("result-count");
+const loadingMessage = document.getElementById("loading-message");
+const errorMessage = document.getElementById("error-message");
+const studentCount = document.getElementById("student-count");
+const tableBody = document.getElementById("student-table-body");
+
 async function loadStudents() {
-    // Get references to page elements
-    const loadingMessage = document.getElementById("loading-message");
-    const errorMessage = document.getElementById("error-message");
-    const studentCount = document.getElementById("student-count");
-    const tableBody = document.getElementById("student-table-body");
+    loadingMessage.textContent = "Loading students...";
+    errorMessage.textContent = "";
+    refreshButton.disabled = true;
 
     try {
-        // Set initial loading state
-        loadingMessage.textContent = "Loading students...";
-        errorMessage.textContent = "";
-
-        // Fetch data from API
         const response = await fetch("/api/students/");
 
-        // === NEW: Specific authentication error handling ===
         if (!response.ok) {
             if (response.status === 401) {
-                throw new Error(
-                    "Authentication required. Please log in."
-                );
+                throw new Error("Authentication required. Please log in.");
             }
-            throw new Error(
-                `HTTP error: ${response.status}`
-            );
+            throw new Error(`HTTP error: ${response.status}`);
         }
-        // === END: Authentication handling ===
 
-        // Parse JSON response
         const data = await response.json();
-
-        // Update total count
+        allStudents = data.students;
         studentCount.textContent = data.count;
 
-        // Clear existing table rows
-        tableBody.innerHTML = "";
+        populateProgramFilter();
+        renderStudents();
 
-        // Empty vs Populated
-        if (data.students.length === 0) {
-            const row = document.createElement("tr");
-            row.innerHTML = `
-                <td colspan="5">
-                    No Student records found.
-                </td>
-            `;
-            tableBody.appendChild(row);
-        } else {
-            data.students.forEach(student => {
-                const row = document.createElement("tr");
-                row.innerHTML = `
-                    <td>${student.id}</td>
-                    <td>${student.student_name}</td>
-                    <td>${student.program}</td>
-                    <td>${student.year_level}</td>
-                    <td>${student.email}</td>
-                `;
-                tableBody.appendChild(row);
-            });
-        }
-
-        // Done — clear loading message
         loadingMessage.textContent = "";
-
     } catch (error) {
-        // Handle errors
         loadingMessage.textContent = "";
         errorMessage.textContent = error.message;
         console.error("Student loading error:", error);
+    } finally {
+        refreshButton.disabled = false;
     }
 }
 
-// Run the function when page loads
+function populateProgramFilter() {
+    const selectedProgram = programFilter.value;
+
+    const programs = [...new Set(
+        allStudents.map(student => student.program).filter(Boolean)
+    )].sort();
+
+    programFilter.replaceChildren();
+
+    const allOption = document.createElement("option");
+    allOption.value = "";
+    allOption.textContent = "All programs";
+    programFilter.appendChild(allOption);
+
+    programs.forEach(program => {
+        const option = document.createElement("option");
+        option.value = program;
+        option.textContent = program;
+        programFilter.appendChild(option);
+    });
+
+    if (programs.includes(selectedProgram)) {
+        programFilter.value = selectedProgram;
+    }
+}
+
+function renderStudents() {
+    const searchTerm = searchInput.value.trim().toLowerCase();
+    const selectedProgram = programFilter.value;
+
+    const filteredStudents = allStudents.filter(student => {
+        const name = (student.student_name || "").toLowerCase();
+        const email = (student.email || "").toLowerCase();
+
+        const matchesSearch =
+            searchTerm === "" ||
+            name.includes(searchTerm) ||
+            email.includes(searchTerm);
+
+        const matchesProgram =
+            selectedProgram === "" ||
+            student.program === selectedProgram;
+
+        return matchesSearch && matchesProgram;
+    });
+
+    tableBody.replaceChildren();
+
+    if (filteredStudents.length === 0) {
+        const row = document.createElement("tr");
+        const cell = document.createElement("td");
+        cell.colSpan = 5;
+        cell.textContent = "No matching Student records found.";
+        row.appendChild(cell);
+        tableBody.appendChild(row);
+    } else {
+        filteredStudents.forEach(student => {
+            const row = document.createElement("tr");
+            [
+                student.id,
+                student.student_name,
+                student.program,
+                student.year_level,
+                student.email
+            ].forEach(value => {
+                const cell = document.createElement("td");
+                cell.textContent = value ?? "";
+                row.appendChild(cell);
+            });
+            tableBody.appendChild(row);
+        });
+    }
+
+    resultCount.textContent =
+        `Showing ${filteredStudents.length} of ${allStudents.length} students`;
+}
+
+searchInput.addEventListener("input", renderStudents);
+programFilter.addEventListener("change", renderStudents);
+
+clearButton.addEventListener("click", () => {
+    searchInput.value = "";
+    programFilter.value = "";
+    renderStudents();
+});
+
+refreshButton.addEventListener("click", loadStudents);
+
 loadStudents();
