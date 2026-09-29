@@ -24,7 +24,7 @@ def student_create(request):
 
 def student_list(request):
     students = Student.objects.all()
-    return render(request, "student_list.html", {"students": students})
+    return render(request, "registration/student_list.html", {"students": students})
 
 
 
