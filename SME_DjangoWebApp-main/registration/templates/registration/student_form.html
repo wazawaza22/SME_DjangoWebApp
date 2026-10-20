@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Registration</title>
+</head>
+<body>
+    <h1>Student Registration</h1>
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <label>Name:</label><br>
+        <input type="text" name="student_name" value="{{ student.student_name }}" required><br><br>
+
+        <label>Program:</label><br>
+        <input type="text" name="program" value="{{ student.program }}" required><br><br>
+
+        <label>Year Level:</label><br>
+        <input type="text" name="year_level" value="{{ student.year_level }}" required><br><br>
+
+        <label>Email:</label><br>
+        <input type="email" name="email" value="{{ student.email }}" required><br><br>
+
+        <button type="submit">Save</button>
+    </form>
+
+    <br>
+    <a href="{% url 'student_list' %}">Back to Student List</a>
+</body>
+</html>

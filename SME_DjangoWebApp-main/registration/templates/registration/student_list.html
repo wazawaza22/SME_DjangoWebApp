@@ -1,0 +1,40 @@
+{% if user.is_authenticated %}
+    <p>Logged in as: {{ user.username }}</p>
+    <form method="post" action="{% url 'logout' %}">
+        {% csrf_token %}
+        <button type="submit">Logout</button>
+    </form>
+{% endif %}
+
+<h1>Registered Students</h1>
+<a href="/registration/add/">Register Student</a>
+<a href="/registration/dashboard/">Student Dashboard</a>
+</a>
+<br><br>
+
+
+<table border="1" cellpadding="8" cellspacing="0">
+    <tr>
+        <th>Name</th>
+        <th>Program</th>
+        <th>Year</th>
+        <th>Email</th>
+        <th>Actions</th>
+    </tr>
+    {% for student in students %}
+    <tr>
+        <td>{{ student.student_name }}</td>
+        <td>{{ student.program }}</td>
+        <td>{{ student.year_level }}</td>
+        <td>{{ student.email }}</td>
+        <td>
+            <a href="{% url 'student_update' student.id %}">Edit</a> |
+            <a href="{% url 'student_delete' student.id %}">Delete</a>
+        </td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="5">No registered students yet.</td>
+    </tr>
+    {% endfor %}
+</table>
